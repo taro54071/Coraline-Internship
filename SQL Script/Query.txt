@@ -1,0 +1,50 @@
+1.
+SELECT a.gen_id, a.gen_title, f.dir_id, f.dir_fname, f.dir_lname, MAX(d.num_o_ratings) as rating FROM genres a
+INNER JOIN movie_genres b on a.gen_id = b.gen_id
+INNER JOIN movie c on b.mov_id = c.mov_id
+INNER JOIN rating d on c.mov_id = d.mov_id
+INNER JOIN movie_direction e on d.mov_id = e.mov_id
+INNER JOIN director f on e.dir_id = f.dir_id
+WHERE d.num_o_ratings IS NOT NULL
+GROUP BY a.gen_id, f.dir_id
+ORDER BY a.gen_id ASC
+
+2.
+SELECT b.act_id AS ID , b.act_fname AS First_Name, SUM(c.mov_time) AS Total_time FROM movie_cast a
+LEFT JOIN actor b on a.act_id = b.act_id
+LEFT JOIN movie c on a.mov_id = c.mov_id
+LEFT JOIN rating d on c.mov_id = d.mov_id
+WHERE d.num_o_ratings IS NOT NULL
+GROUP BY b.act_id
+ORDER BY b.act_id
+
+3.
+SELECT b.act_id, b.act_fname, b.act_gender, a.mov_id, e.dir_id, e.dir_fname FROM movie_cast a
+LEFT JOIN actor b on a.act_id = b.act_id
+LEFT JOIN movie c on a.mov_id = c.mov_id
+LEFT JOIN movie_direction d on c.mov_id = d.mov_id
+LEFT JOIN director e on d.dir_id = e.dir_id
+WHERE b.act_gender = 'F'
+ORDER BY b.act_id ASC
+
+4.
+UPDATE genres g
+	SET gen_title = g2.gen_title_row
+	FROM (SELECT g2.*, ROW_NUMBER() OVER () AS gen_title_row
+		 	FROM genres g2
+		 ) g2
+	WHERE g2.gen_id = g.gen_id;
+
+ALTER TABLE genres
+ALTER COLUMN gen_title TYPE integer USING (gen_title::integer)
+
+
+5.
+UPDATE actor
+	SET act_gender = 'F'
+		WHERE act_fname LIKE 'Em%' 
+		OR act_fname LIKE 'Char%'
+		OR act_fname LIKE '%dy'
+		OR act_fname LIKE '%sy'
+		OR act_fname LIKE '%lia'
+	RETURNING act_id, act_fname, act_lname, act_gender;
